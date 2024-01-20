@@ -58,20 +58,18 @@ async function compileCSS(stylesDir, bundlePath) {
 
 //copy dir from subtask 04
 async function copyDir(sourceDir, targetDir) {
-  try {
-    await fs.mkdir(targetDir, { recursive: true });
+  await fs.mkdir(targetDir, { recursive: true });
+  const entries = await fs.readdir(sourceDir, { withFileTypes: true });
 
-    const files = await fs.readdir(sourceDir, { withFileTypes: true });
+  for (const entry of entries) {
+    const srcPath = path.join(sourceDir, entry.name);
+    const destPath = path.join(targetDir, entry.name);
 
-    for (const file of files) {
-      if (file.isFile()) {
-        const srcFilePath = path.join(sourceDir, file.name);
-        const destFilePath = path.join(targetDir, file.name);
-        await fs.copyFile(srcFilePath, destFilePath);
-      }
+    if (entry.isDirectory()) {
+      await copyDir(srcPath, destPath);
+    } else if (entry.isFile()) {
+      await fs.copyFile(srcPath, destPath);
     }
-  } catch (err) {
-    console.error('Error:', err);
   }
 }
 
